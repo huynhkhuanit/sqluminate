@@ -115,7 +115,7 @@ AI, authentication, server-side SQL execution, and database connections remain o
 
 ## Contributing
 
-The dedicated contribution guide is planned for release readiness. Until then, read `AGENTS.md`, keep changes small, add tests for behavior, and use Conventional Commits.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch, pull request, review, and merge workflow. Keep changes small, add tests for behavior, and use Conventional Commits.
 
 ## License
 
