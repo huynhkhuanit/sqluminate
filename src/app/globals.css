@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light dark;
+  --background: #f4f6f5;
+  --surface: #ffffff;
+  --surface-subtle: #edf1ef;
+  --surface-strong: #dfe5e2;
+  --foreground: #17201c;
+  --foreground-muted: #5a6861;
+  --border: #cbd4cf;
+  --border-strong: #9eaaa4;
+  --accent: #167554;
+  --accent-hover: #0e5c40;
+  --accent-strong: #0e5c40;
+  --accent-soft: #d9f3e8;
+  --danger: #b42318;
+  --danger-soft: #fee4e2;
+  --focus: #167554;
+  --shadow: 0 16px 40px rgb(23 32 28 / 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #101512;
+    --surface: #171d19;
+    --surface-subtle: #1f2722;
+    --surface-strong: #29332d;
+    --foreground: #eef4f0;
+    --foreground-muted: #a8b6ae;
+    --border: #344139;
+    --border-strong: #4d5d54;
+    --accent: #167554;
+    --accent-hover: #0e5c40;
+    --accent-strong: #78d9b0;
+    --accent-soft: #153d2e;
+    --danger: #ff8a80;
+    --danger-soft: #46201f;
+    --focus: #65d6a5;
+    --shadow: 0 16px 40px rgb(0 0 0 / 0.24);
+  }
+}
+
+:root[data-theme="dark"] {
+  --background: #101512;
+  --surface: #171d19;
+  --surface-subtle: #1f2722;
+  --surface-strong: #29332d;
+  --foreground: #eef4f0;
+  --foreground-muted: #a8b6ae;
+  --border: #344139;
+  --border-strong: #4d5d54;
+  --accent: #167554;
+  --accent-hover: #0e5c40;
+  --accent-strong: #78d9b0;
+  --accent-soft: #153d2e;
+  --danger: #ff8a80;
+  --danger-soft: #46201f;
+  --focus: #65d6a5;
+  --shadow: 0 16px 40px rgb(0 0 0 / 0.24);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+button,
+select,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--focus) 70%, transparent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

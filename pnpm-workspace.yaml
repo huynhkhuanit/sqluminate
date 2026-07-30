@@ -1,0 +1,8 @@
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - "@playwright/test@1.62.1"
+  - lucide-react@1.28.0
+  - playwright-core@1.62.1
+  - playwright@1.62.1
