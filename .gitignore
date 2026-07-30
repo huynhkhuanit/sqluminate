@@ -6,9 +6,13 @@
 /out
 
 # testing
-/coverage
-/playwright-report
-/test-results
+/coverage/
+/playwright-report/
+/test-results/
+/.nyc_output/
+/.vitest/
+/test-output/
+# Test source files such as tests/ and src/**/*.test.* are intentionally tracked.
 
 # local files
 .DS_Store
