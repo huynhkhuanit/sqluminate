@@ -115,7 +115,7 @@ AI, authentication, server-side SQL execution, and database connections remain o
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch, pull request, review, and merge workflow. Keep changes small, add tests for behavior, and use Conventional Commits.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the English workflow or [CONTRIBUTING.vi.md](CONTRIBUTING.vi.md) for the Vietnamese version. Keep changes small, add tests for behavior, and use Conventional Commits.
 
 ## License
 
