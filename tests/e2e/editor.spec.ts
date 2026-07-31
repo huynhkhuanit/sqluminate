@@ -1,9 +1,67 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/workspace");
   await page.evaluate(() => window.localStorage.clear());
   await page.reload();
+});
+
+test("opens the workspace from the landing page", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", { name: "See the query behind the query." }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: "Interactive SQL node field" }),
+  ).toBeVisible();
+  await page
+    .getByRole("region", { name: "See the query behind the query." })
+    .getByRole("link", { name: "Open workspace" })
+    .click();
+
+  await expect(page).toHaveURL(/\/workspace$/);
+  await expect(page.getByRole("heading", { name: "SQL editor" })).toBeVisible();
+});
+
+test("keeps the Three.js scene static when reduced motion is requested", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  const scene = page.getByRole("img", {
+    name: "Interactive SQL node field",
+  });
+  await expect(scene).toHaveAttribute("data-motion", "reduced");
+  await expect(scene).toHaveAttribute("aria-busy", "false");
+
+  const supportingScenes = page.locator("[data-three-scene]");
+  await expect(supportingScenes).toHaveCount(4);
+
+  for (let index = 0; index < 4; index += 1) {
+    await expect(supportingScenes.nth(index)).toHaveAttribute(
+      "data-motion",
+      "reduced",
+    );
+  }
+});
+
+test("loads supporting 3D scenes only as they enter the viewport", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Features" }).first().click();
+
+  for (const variant of ["relationships", "flow", "structure"]) {
+    await expect(
+      page.locator(`[data-three-scene="${variant}"]`),
+    ).toHaveAttribute("aria-busy", "false");
+  }
+
+  const beacon = page.locator('[data-three-scene="beacon"]');
+  await beacon.scrollIntoViewIfNeeded();
+  await expect(beacon).toHaveAttribute("aria-busy", "false");
 });
 
 test("loads, clears, and restores the PostgreSQL example", async ({ page }) => {

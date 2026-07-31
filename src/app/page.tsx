@@ -1,5 +1,5 @@
-import { SqlWorkbench } from "@/features/sql-editor";
+import { LandingPage } from "@/features/landing";
 
 export default function HomePage() {
-  return <SqlWorkbench />;
+  return <LandingPage />;
 }

@@ -5,7 +5,7 @@ import "./globals.css";
 const sansFont = IBM_Plex_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const monoFont = JetBrains_Mono({
@@ -17,7 +17,7 @@ const monoFont = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "SQLuminate | Visual SQL Explorer",
   description:
-    "An open-source web app for learning how SQL queries are structured.",
+    "An open-source web app that makes SQL query structure easier to understand.",
 };
 
 export default function RootLayout({

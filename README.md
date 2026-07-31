@@ -2,13 +2,15 @@
 
 Visualize SQL. Understand every query.
 
-SQLuminate is an open-source, browser-based SQL learning and analysis tool. The current repository implements the project foundation and editor vertical slice from Milestones 0 and 1.
+SQLuminate is an open-source, browser-based SQL learning and analysis tool. The current repository includes a polished product landing page and the editor vertical slice from Milestones 0 and 1.
 
 ## Current status
 
 This first milestone includes:
 
 - A Next.js App Router application with strict TypeScript.
+- A responsive landing page based on the project Figma design.
+- A set of lazy-loaded, pointer-reactive Three.js query scenes with reduced-motion fallbacks.
 - A responsive SQL workspace built with Tailwind CSS.
 - A locally bundled Monaco Editor with SQL highlighting and line numbers.
 - PostgreSQL dialect selection and one tested learning example.
@@ -56,7 +58,7 @@ Start the development server:
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) for the landing page. The working SQL editor is available at [http://localhost:3000/workspace](http://localhost:3000/workspace).
 
 ## Quality commands
 
@@ -82,8 +84,15 @@ src/
 ├── app/
 │   ├── globals.css
 │   ├── layout.tsx
-│   └── page.tsx
+│   ├── page.tsx
+│   └── workspace/
+│       └── page.tsx
 ├── features/
+│   ├── landing/
+│   │   └── components/
+│   │       ├── landing-page.tsx
+│   │       ├── sql-node-field.tsx
+│   │       └── three-scene-card.tsx
 │   └── sql-editor/
 │       ├── components/
 │       ├── hooks/
@@ -97,7 +106,7 @@ src/
         └── query-storage.ts
 ```
 
-The page shell remains a server component. The editor workspace is a focused client boundary because it uses Monaco, local storage, and browser theme APIs. Formatting and storage are isolated behind small project-owned adapters.
+The landing page remains a server component. Its Three.js visuals use isolated client boundaries that load renderers only near the viewport, pause animation when hidden, cap pixel density, clean up WebGL resources, respond to container resizing, and respect reduced-motion preferences. The editor workspace is a separate focused client boundary because it uses Monaco, local storage, and browser theme APIs. Formatting and storage remain isolated behind small project-owned adapters.
 
 No parser, normalized AST, graph, or future feature folder is scaffolded in advance.
 
@@ -123,4 +132,4 @@ SQLuminate is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-The editor and formatting foundation uses Next.js, React, Tailwind CSS, Monaco Editor, and `sql-formatter`.
+The landing page and editor foundation use Next.js, React, Tailwind CSS, Three.js, Monaco Editor, and `sql-formatter`.
