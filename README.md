@@ -2,19 +2,20 @@
 
 Visualize SQL. Understand every query.
 
-SQLuminate is an open-source, browser-based SQL learning and analysis tool. The current repository includes a polished product landing page and the editor vertical slice from Milestones 0 and 1.
+SQLuminate is an open-source, browser-based SQL learning and analysis tool. The current repository includes a dark-first product landing page and the editor vertical slice from Milestones 0 and 1.
 
 ## Current status
 
 This first milestone includes:
 
 - A Next.js App Router application with strict TypeScript.
-- A responsive landing page based on the project Figma design.
-- A set of lazy-loaded, pointer-reactive Three.js query scenes with reduced-motion fallbacks.
+- A responsive, dark-first landing page with a real multi-dialect formatting demo.
+- Transparent capability and roadmap status for the current MVP boundary.
 - A responsive SQL workspace built with Tailwind CSS.
 - A locally bundled Monaco Editor with SQL highlighting and line numbers.
-- PostgreSQL dialect selection and one tested learning example.
-- Local SQL formatting through `sql-formatter`.
+- PostgreSQL, MySQL, SQLite, SQL Server, and Oracle dialect selection.
+- Local SQL formatting through `sql-formatter`, with dialect-aware code-block highlighting.
+- Site-wide English, Tiếng Việt, and 中文 localization with cookie persistence.
 - Query persistence in browser local storage.
 - Light and dark themes.
 - Vitest, React Testing Library, Playwright, ESLint, Prettier, and CI.
@@ -23,7 +24,9 @@ There is no hosted demo for this milestone.
 
 ## Supported dialects and syntax
 
-PostgreSQL is the only selectable dialect. Formatting uses the PostgreSQL mode from `sql-formatter`.
+The current formatter and code-preview dialects are PostgreSQL, MySQL, SQLite, SQL Server, and Oracle. SQL Server maps to `transactsql` and Oracle maps to `plsql` in `sql-formatter`.
+
+The code block highlighter is a small local lexical highlighter. It colors keywords, functions, strings, comments, numbers, operators, and identifiers using dialect-specific keyword sets. It is presentation-only and does not validate SQL semantics.
 
 SQLuminate does not parse SQL yet. It does not validate query semantics, create a query structure, render JOIN graphs, or build logical flows. Those capabilities begin after the parser boundary in Milestone 2.
 
@@ -35,7 +38,17 @@ SQLuminate does not parse SQL yet. It does not validate query semantics, create 
 - No analytics, accounts, backend, database, or AI provider is included.
 - Input is limited to 100,000 characters to reduce browser lockup risk.
 
-The application sends a restrictive Content Security Policy. Monaco worker code is bundled with the application and runs through the browser worker mechanism.
+The application sends a restrictive Content Security Policy. Monaco worker code is bundled with the application and runs through the browser worker mechanism. The landing page does not load Monaco, WebGL, or canvas visuals.
+
+## Internationalization
+
+The locale boundary is implemented at the root layout so future pages can reuse it without duplicating language logic:
+
+- Supported locales are `en`, `vi`, and `zh`.
+- `I18nProvider` exposes the active locale and dictionary to client components.
+- Server pages use `getRequestLocale()` and `getDictionary()` before rendering metadata or page copy.
+- The language selector uses flag icons and native language names, and persists the choice in the `sqluminate-locale` cookie.
+- Shared copy lives in `src/lib/i18n/dictionaries.ts`; add keys to all dictionaries before using them in a new page.
 
 ## Requirements
 
@@ -91,22 +104,31 @@ src/
 │   ├── landing/
 │   │   └── components/
 │   │       ├── landing-page.tsx
-│   │       ├── sql-node-field.tsx
-│   │       └── three-scene-card.tsx
+│   │       ├── landing-header.tsx
+│   │       ├── landing-page.module.css
+│   │       ├── guided-format-demo.tsx
+│   │       └── product-preview.tsx
 │   └── sql-editor/
 │       ├── components/
 │       ├── hooks/
 │       ├── model/
 │       └── index.ts
+├── components/
+│   ├── i18n/
+│   └── ui/
 └── lib/
+    ├── i18n/
+    │   ├── dictionaries.ts
+    │   └── server.ts
     ├── sql/
     │   ├── dialects.ts
-    │   └── formatter-adapter.ts
+    │   ├── formatter-adapter.ts
+    │   └── sql-highlighter.ts
     └── storage/
         └── query-storage.ts
 ```
 
-The landing page remains a server component. Its Three.js visuals use isolated client boundaries that load renderers only near the viewport, pause animation when hidden, cap pixel density, clean up WebGL resources, respond to container resizing, and respect reduced-motion preferences. The editor workspace is a separate focused client boundary because it uses Monaco, local storage, and browser theme APIs. Formatting and storage remain isolated behind small project-owned adapters.
+The landing page remains a server component. Its client boundaries are the guided formatter, language switcher, and shared locale provider. The guided formatter lazy-loads the project-owned formatting adapter after the user requests formatting. The editor workspace is a separate focused client boundary because it uses Monaco, local storage, browser theme APIs, and the same locale provider. Formatting, highlighting, storage, and localization remain isolated behind small project-owned adapters.
 
 No parser, normalized AST, graph, or future feature folder is scaffolded in advance.
 
@@ -132,4 +154,4 @@ SQLuminate is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-The landing page and editor foundation use Next.js, React, Tailwind CSS, Three.js, Monaco Editor, and `sql-formatter`.
+The landing page and editor foundation use Next.js, React, Tailwind CSS, Lucide icons, Monaco Editor, and `sql-formatter`.

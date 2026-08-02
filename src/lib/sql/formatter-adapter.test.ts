@@ -28,4 +28,12 @@ describe("formatSql", () => {
       expect(result.message).toMatch(/^Formatting failed\./);
     }
   });
+
+  it("formats the supported dialect mapping through sql-formatter", () => {
+    for (const dialect of ["mysql", "sqlite", "sqlserver", "oracle"] as const) {
+      const result = formatSql("select id from users;", dialect);
+
+      expect(result.ok).toBe(true);
+    }
+  });
 });

@@ -1,0 +1,70 @@
+.codeBlock {
+  max-height: 370px;
+  margin: 0;
+  overflow: auto;
+  padding: 1.1rem 0.75rem 1.25rem 0;
+  background: transparent;
+  color: var(--code-foreground, var(--text-secondary, #b8c6be));
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(0.61rem, 1vw, 0.72rem);
+  line-height: 1.85;
+  tab-size: 2;
+}
+
+.codeLine {
+  display: flex;
+  min-width: max-content;
+  padding-right: 1rem;
+}
+
+.lineNumber {
+  width: 2.8rem;
+  flex: 0 0 2.8rem;
+  padding-right: 0.8rem;
+  color: var(--code-line-number, var(--text-tertiary, #75857c));
+  text-align: right;
+  user-select: none;
+}
+
+.lineText {
+  color: var(--code-foreground, var(--text-secondary, #b8c6be));
+  white-space: pre;
+}
+
+.tokenKeyword {
+  color: var(--code-keyword, #70e0ad);
+  font-weight: 700;
+}
+
+.tokenFunction {
+  color: var(--code-function, #9ed7ff);
+}
+
+.tokenString {
+  color: var(--code-string, #ffad9f);
+}
+
+.tokenNumber {
+  color: var(--code-number, #e8bd63);
+}
+
+.tokenComment {
+  color: var(--code-comment, #75857c);
+  font-style: italic;
+}
+
+.tokenOperator {
+  color: var(--code-operator, #d7e8df);
+}
+
+.tokenIdentifier {
+  color: var(--code-identifier, #c6b8ff);
+}
+
+.tokenPunctuation {
+  color: var(--code-punctuation, #9fb0a7);
+}
+
+.tokenPlain {
+  color: inherit;
+}

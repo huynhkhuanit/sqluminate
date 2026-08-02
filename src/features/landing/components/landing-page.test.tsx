@@ -1,84 +1,63 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it } from "vitest";
 import { LandingPage } from "@/features/landing/components/landing-page";
 
-vi.mock("@/features/landing/components/sql-node-field", () => ({
-  SqlNodeField: () => (
-    <div aria-label="Interactive SQL node field" role="img" />
-  ),
-}));
-
-vi.mock("@/features/landing/components/three-scene-card", () => ({
-  ThreeSceneCard: ({ label, variant }: { label: string; variant: string }) => (
-    <div aria-label={label} data-three-scene={variant} role="img" />
-  ),
-}));
-
 describe("LandingPage", () => {
-  it("introduces SQLuminate and links to the working local workspace", () => {
+  it("communicates the current milestone and links to the workspace", () => {
     render(<LandingPage />);
 
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "See the query behind the query.",
+        name: "Visualize SQL. Understand every query.",
       }),
     ).toBeInTheDocument();
+    expect(screen.getByText("customer-orders.sql")).toBeInTheDocument();
     expect(
-      screen.getByRole("img", { name: "Interactive SQL node field" }),
-    ).toBeInTheDocument();
+      screen.getAllByText("PostgreSQL", { exact: true }).length,
+    ).toBeGreaterThanOrEqual(2);
 
-    const workspaceLinks = screen.getAllByRole("link", {
-      name: "Open workspace",
-    });
-    expect(workspaceLinks.length).toBeGreaterThanOrEqual(2);
-    expect(
-      workspaceLinks.every(
-        (link) => link.getAttribute("href") === "/workspace",
-      ),
-    ).toBe(true);
+    const editorLink = screen.getByRole("link", { name: "Open editor" });
+    expect(editorLink).toHaveAttribute("href", "/workspace");
+    expect(screen.getByRole("link", { name: "View roadmap" })).toHaveAttribute(
+      "href",
+      "#capabilities",
+    );
   });
 
-  it("provides working in-page navigation and privacy messaging", () => {
-    const { container } = render(<LandingPage />);
+  it("shows honest trust signals and capability statuses", () => {
+    render(<LandingPage />);
 
+    expect(screen.getByText("Processed locally")).toBeInTheDocument();
+    expect(screen.getByText("SQL is never executed")).toBeInTheDocument();
+    expect(screen.getByText("No account required")).toBeInTheDocument();
+    expect(screen.getByText("MIT licensed")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", {
-        name: "From raw SQL to a map you can read.",
-      }),
+      screen.getByRole("heading", { name: "What works today" }),
     ).toBeInTheDocument();
+    expect(screen.getAllByText("Available").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("In progress").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Planned").length).toBeGreaterThanOrEqual(2);
     expect(
-      screen.getByRole("heading", { name: "Your query stays yours." }),
+      screen.getByText(/The current milestone formats and edits SQL/),
     ).toBeInTheDocument();
-    expect(
-      screen.getAllByRole("link", { name: "How it works" })[0],
-    ).toHaveAttribute("href", "#how-it-works");
-    expect(container.textContent).not.toMatch(/[—–]/);
   });
 
-  it("uses distinct 3D scenes to explain each visual model", () => {
-    const { container } = render(<LandingPage />);
+  it("keeps the mobile navigation keyboard-friendly through native details", async () => {
+    const user = userEvent.setup();
+    render(<LandingPage />);
 
+    const menu = screen.getByText("Menu");
+    const details = menu.closest("details");
+
+    expect(details).not.toHaveAttribute("open");
+    await user.click(menu);
+    expect(details).toHaveAttribute("open");
     expect(
-      screen.getByRole("img", {
-        name: "Interactive 3D JOIN relationship model",
-      }),
-    ).toHaveAttribute("data-three-scene", "relationships");
-    expect(
-      screen.getByRole("img", {
-        name: "Interactive 3D logical query flow",
-      }),
-    ).toHaveAttribute("data-three-scene", "flow");
-    expect(
-      screen.getByRole("img", {
-        name: "Interactive 3D query structure layers",
-      }),
-    ).toHaveAttribute("data-three-scene", "structure");
-    expect(
-      screen.getByRole("img", {
-        name: "Interactive 3D SQLuminate beacon",
-      }),
-    ).toHaveAttribute("data-three-scene", "beacon");
-    expect(container.querySelectorAll("[data-three-scene]")).toHaveLength(4);
+      screen.getByRole("navigation", { name: "Mobile navigation" }),
+    ).toBeVisible();
+    await user.click(menu);
+    expect(details).not.toHaveAttribute("open");
   });
 });
