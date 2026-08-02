@@ -23,6 +23,7 @@ if (typeof window !== "undefined" && !window.MonacoEnvironment) {
 }
 
 interface MonacoSqlEditorProps {
+  editorAriaLabel: string;
   query: string;
   theme: ColorTheme;
   onChange: (query: string) => void;
@@ -30,6 +31,7 @@ interface MonacoSqlEditorProps {
 }
 
 export function MonacoSqlEditor({
+  editorAriaLabel,
   query,
   theme,
   onChange,
@@ -73,7 +75,7 @@ export function MonacoSqlEditor({
       onChange={(value) => onChange(value ?? "")}
       onMount={handleMount}
       options={{
-        ariaLabel: "SQL editor",
+        ariaLabel: editorAriaLabel,
         automaticLayout: true,
         fontFamily: "var(--font-mono), monospace",
         fontLigatures: true,
