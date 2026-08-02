@@ -1,0 +1,59 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  min-width: 132px;
+  align-items: center;
+}
+
+.select {
+  width: 100%;
+  min-height: 42px;
+  appearance: none;
+  border: 1px solid var(--language-border, var(--border, #30443a));
+  border-radius: 8px;
+  background: var(--language-surface, var(--surface, #111a15));
+  color: var(--language-foreground, var(--foreground, #f1f7f3));
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  outline: none;
+  padding: 0.7rem 2rem 0.7rem 0.75rem;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.select:hover {
+  border-color: var(--language-border-strong, var(--border-strong, #557467));
+  background: var(--language-surface-hover, var(--surface-subtle, #1a2820));
+}
+
+.select:focus-visible {
+  border-color: var(--language-focus, var(--accent, #70e0ad));
+  box-shadow: 0 0 0 3px var(--language-focus-ring, rgb(112 224 173 / 0.2));
+}
+
+.select option {
+  background: var(--language-option-background, #111a15);
+  color: var(--language-option-foreground, #f1f7f3);
+}
+
+.chevron {
+  position: absolute;
+  right: 0.65rem;
+  pointer-events: none;
+  color: var(--language-muted, var(--foreground-muted, #9fb0a7));
+}
+
+@media (max-width: 520px) {
+  .root {
+    min-width: 0;
+  }
+
+  .select {
+    min-width: 0;
+    padding-right: 1.8rem;
+  }
+}

@@ -1,5 +1,5 @@
 import { format } from "sql-formatter";
-import type { SqlDialect } from "@/lib/sql/dialects";
+import { getSqlFormatterLanguage, type SqlDialect } from "@/lib/sql/dialects";
 
 export type FormatSqlResult =
   | {
@@ -11,12 +11,20 @@ export type FormatSqlResult =
       message: string;
     };
 
-export function formatSql(sql: string, dialect: SqlDialect): FormatSqlResult {
+export interface FormatSqlOptions {
+  failurePrefix?: string;
+}
+
+export function formatSql(
+  sql: string,
+  dialect: SqlDialect,
+  options: FormatSqlOptions = {},
+): FormatSqlResult {
   try {
     return {
       ok: true,
       sql: format(sql, {
-        language: dialect,
+        language: getSqlFormatterLanguage(dialect),
         keywordCase: "upper",
         dataTypeCase: "upper",
         functionCase: "upper",
@@ -30,7 +38,7 @@ export function formatSql(sql: string, dialect: SqlDialect): FormatSqlResult {
 
     return {
       ok: false,
-      message: `Formatting failed. ${details}`,
+      message: `${options.failurePrefix ?? "Formatting failed."} ${details}`,
     };
   }
 }

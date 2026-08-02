@@ -1,368 +1,458 @@
-import { SqlNodeField } from "@/features/landing/components/sql-node-field";
-import { ThreeSceneCard } from "@/features/landing/components/three-scene-card";
+import {
+  ArrowUpRight,
+  BookOpen,
+  Braces,
+  Download,
+  FileCode2,
+  GitBranch,
+  Layers,
+  Paintbrush,
+  Save,
+  Scale,
+  ShieldCheck,
+  Sun,
+  UserRoundX,
+  Workflow,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { AppDictionary } from "@/lib/i18n/dictionaries";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { GuidedFormatDemo } from "@/features/landing/components/guided-format-demo";
+import {
+  Brand,
+  LandingHeader,
+} from "@/features/landing/components/landing-header";
+import styles from "@/features/landing/components/landing-page.module.css";
 
 const repositoryUrl = "https://github.com/huynhkhuanit/sqluminate";
+const contributingUrl = `${repositoryUrl}/blob/main/CONTRIBUTING.md`;
+const licenseUrl = `${repositoryUrl}/blob/main/LICENSE`;
 
-function Brand({ compact = false }: { compact?: boolean }) {
+const iconProps = {
+  "aria-hidden": true,
+  size: 18,
+  strokeWidth: 1.7,
+} as const;
+
+type CapabilityStatus = "available" | "inProgress" | "planned";
+
+interface CapabilityItem {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+interface CapabilityGroup {
+  title: string;
+  status: CapabilityStatus;
+  items: readonly CapabilityItem[];
+}
+
+function cx(...classNames: Array<string | false | undefined>) {
+  return classNames.filter(Boolean).join(" ");
+}
+
+function getCapabilityGroups(
+  copy: AppDictionary["landing"]["capabilities"],
+): readonly CapabilityGroup[] {
+  return [
+    {
+      title: copy.groups.availableNow,
+      status: "available",
+      items: [
+        { icon: FileCode2, ...copy.items.monaco },
+        { icon: Paintbrush, ...copy.items.formatting },
+        { icon: Save, ...copy.items.persistence },
+        { icon: Sun, ...copy.items.themes },
+        { icon: BookOpen, ...copy.items.examples },
+      ],
+    },
+    {
+      title: copy.groups.inProgress,
+      status: "inProgress",
+      items: [
+        { icon: Braces, ...copy.items.parser },
+        { icon: ShieldCheck, ...copy.items.diagnostics },
+      ],
+    },
+    {
+      title: copy.groups.planned,
+      status: "planned",
+      items: [
+        { icon: Layers, ...copy.items.structure },
+        { icon: GitBranch, ...copy.items.graph },
+        { icon: Workflow, ...copy.items.flow },
+        { icon: Download, ...copy.items.export },
+        { icon: BookOpen, ...copy.items.gallery },
+      ],
+    },
+  ];
+}
+
+function StatusBadge({
+  labels,
+  status,
+}: {
+  labels: AppDictionary["landing"]["capabilities"]["statuses"];
+  status: CapabilityStatus;
+}) {
   return (
-    <span className={`landing-brand ${compact ? "is-compact" : ""}`}>
-      <span aria-hidden="true" className="landing-brand-mark">
-        SQL
-      </span>
-      <span className="landing-brand-copy">
-        <strong>SQLuminate</strong>
-        <span>{compact ? "Visual SQL Explorer" : "VISUAL SQL EXPLORER"}</span>
-      </span>
+    <span className={cx(styles.statusBadge, styles[`status${status}`])}>
+      <span aria-hidden="true" className={styles.statusDot} />
+      {labels[status]}
     </span>
   );
 }
 
-function WriteSqlVisual() {
+function StepVisual({
+  copy,
+  variant,
+}: {
+  copy: AppDictionary["landing"]["howItWorks"]["steps"];
+  variant: "write" | "understand" | "explore";
+}) {
+  if (variant === "write") {
+    return (
+      <div aria-hidden="true" className={styles.stepVisual}>
+        <span>
+          <b>SELECT</b> c.name
+        </span>
+        <span>
+          <b>FROM</b> customers c
+        </span>
+        <span>
+          <b>JOIN</b> orders o
+        </span>
+        <span className={styles.stepCaret} />
+      </div>
+    );
+  }
+
+  if (variant === "understand") {
+    return (
+      <div
+        aria-hidden="true"
+        className={cx(styles.stepVisual, styles.scopeVisual)}
+      >
+        <span className={styles.scopeLine} />
+        <span className={styles.scopeChip}>{copy.write.sqlText}</span>
+        <span className={styles.scopeChip}>{copy.understand.astBoundary}</span>
+        <span className={styles.scopeChip}>{copy.understand.ownedTypes}</span>
+      </div>
+    );
+  }
+
   return (
-    <div aria-hidden="true" className="write-sql-visual">
-      <code>
-        <span>SELECT</span> customers.name,
-      </code>
-      <code>
-        <span>FROM</span> customers
-      </code>
-      <code>
-        <span>JOIN</span> orders <i>|</i>
-      </code>
+    <div
+      aria-hidden="true"
+      className={cx(styles.stepVisual, styles.flowVisual)}
+    >
+      <span>{copy.explore.from}</span>
+      <i />
+      <span className={styles.flowActive}>{copy.explore.join}</span>
+      <i />
+      <span>{copy.explore.where}</span>
+      <i />
+      <span>{copy.explore.select}</span>
     </div>
   );
 }
 
-function RelationVisual() {
-  return (
-    <div aria-hidden="true" className="relation-visual">
-      <span className="relation-line relation-line-a" />
-      <span className="relation-line relation-line-b" />
-      <span className="relation-line relation-line-c" />
-      <i className="relation-point relation-point-a" />
-      <i className="relation-point relation-point-b" />
-      <i className="relation-point relation-point-c" />
-      <i className="relation-point relation-point-d" />
-    </div>
-  );
+interface LandingPageProps {
+  dictionary?: AppDictionary;
 }
 
-function FlowVisual() {
+export function LandingPage({
+  dictionary = getDictionary("en"),
+}: LandingPageProps) {
+  const copy = dictionary.landing;
+  const capabilityGroups = getCapabilityGroups(copy.capabilities);
+  const trustItems: ReadonlyArray<{ icon: LucideIcon; title: string }> = [
+    { icon: ShieldCheck, title: copy.trust.processedLocally },
+    { icon: FileCode2, title: copy.trust.sqlNeverExecuted },
+    { icon: UserRoundX, title: copy.trust.noAccount },
+    { icon: Scale, title: copy.trust.mitLicensed },
+  ];
+
   return (
-    <div aria-hidden="true" className="flow-visual">
-      <span>FROM</span>
-      <span className="is-active">JOIN</span>
-      <span>WHERE</span>
-      <span>GROUP BY</span>
-    </div>
-  );
-}
+    <div className={styles.shell}>
+      <a className={styles.skipLink} href="#main-content">
+        {copy.skipToContent}
+      </a>
 
-const trustItems = [
-  {
-    label: "PRIVACY",
-    title: "Local by default",
-    body: "Query text is edited and saved in your browser.",
-  },
-  {
-    label: "BOUNDARY",
-    title: "No database required",
-    body: "The workspace formats SQL. It never executes your query.",
-  },
-  {
-    label: "FOCUS",
-    title: "No AI required",
-    body: "Formatting, examples, and editing work without a provider.",
-  },
-  {
-    label: "LICENSE",
-    title: "MIT and open source",
-    body: "A small, reviewable tool for learners and contributors.",
-  },
-] as const;
+      <LandingHeader copy={copy.header} />
 
-export function LandingPage() {
-  return (
-    <main className="landing-shell">
-      <header className="landing-header">
-        <div className="landing-header-inner">
-          <a aria-label="SQLuminate home" href="#top">
-            <Brand />
-          </a>
+      <main id="main-content">
+        <section aria-labelledby="hero-title" className={styles.hero} id="top">
+          <div className={cx(styles.container, styles.heroGrid)}>
+            <div className={styles.heroCopy}>
+              <p className={styles.eyebrow}>
+                {copy.hero.eyebrow.map((label, index) => (
+                  <span key={label}>
+                    {index > 0 ? <span aria-hidden="true">•</span> : null}
+                    {label}
+                  </span>
+                ))}
+              </p>
+              <h1 aria-label={copy.hero.titleAria} id="hero-title">
+                {copy.hero.titleStart}
+                <br />
+                <span>{copy.hero.titleHighlight}</span>
+              </h1>
+              <p className={styles.heroBody}>{copy.hero.body}</p>
+              <div className={styles.heroActions}>
+                <a
+                  className={cx(styles.button, styles.buttonPrimary)}
+                  href="/workspace"
+                >
+                  <span>{copy.hero.openEditor}</span>
+                  <ArrowUpRight {...iconProps} />
+                </a>
+                <a
+                  className={cx(styles.button, styles.buttonSecondary)}
+                  href="#capabilities"
+                >
+                  <span>{copy.hero.viewRoadmap}</span>
+                </a>
+              </div>
+            </div>
 
-          <span aria-hidden="true" className="landing-header-rule" />
-          <nav aria-label="Primary navigation" className="landing-nav">
-            <a href="#how-it-works">How it works</a>
-            <a href="#features">Features</a>
-            <a href="#open-source">Open source</a>
-          </nav>
-          <span aria-hidden="true" className="landing-header-rule" />
+            <GuidedFormatDemo />
+          </div>
+        </section>
 
-          <div className="landing-header-actions">
-            <a className="landing-github-link" href={repositoryUrl}>
-              GitHub <span aria-hidden="true">↗</span>
-            </a>
-            <a
-              className="landing-button landing-button-primary"
-              href="/workspace"
+        <section aria-label={copy.trust.ariaLabel} className={styles.trustRail}>
+          <div className={cx(styles.container, styles.trustGrid)}>
+            {trustItems.map(({ icon: Icon, title }) => (
+              <div className={styles.trustItem} key={title}>
+                <Icon {...iconProps} />
+                <strong>{title}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="how-it-works-title"
+          className={styles.section}
+          id="how-it-works"
+        >
+          <div className={styles.container}>
+            <div className={styles.sectionHeading}>
+              <h2 id="how-it-works-title">{copy.howItWorks.title}</h2>
+              <p>{copy.howItWorks.body}</p>
+            </div>
+
+            <div className={styles.stepsGrid}>
+              <article className={cx(styles.step, styles.stepPrimary)}>
+                <div className={styles.stepHeader}>
+                  <span className={styles.stepNumber}>01</span>
+                  <StatusBadge
+                    labels={copy.capabilities.statuses}
+                    status="available"
+                  />
+                </div>
+                <h3>{copy.howItWorks.steps.write.title}</h3>
+                <p>{copy.howItWorks.steps.write.description}</p>
+                <StepVisual copy={copy.howItWorks.steps} variant="write" />
+              </article>
+
+              <article className={styles.step}>
+                <div className={styles.stepHeader}>
+                  <span className={styles.stepNumber}>02</span>
+                  <StatusBadge
+                    labels={copy.capabilities.statuses}
+                    status="inProgress"
+                  />
+                </div>
+                <h3>{copy.howItWorks.steps.understand.title}</h3>
+                <p>{copy.howItWorks.steps.understand.description}</p>
+                <StepVisual copy={copy.howItWorks.steps} variant="understand" />
+              </article>
+
+              <article className={styles.step}>
+                <div className={styles.stepHeader}>
+                  <span className={styles.stepNumber}>03</span>
+                  <StatusBadge
+                    labels={copy.capabilities.statuses}
+                    status="planned"
+                  />
+                </div>
+                <h3>{copy.howItWorks.steps.explore.title}</h3>
+                <p>{copy.howItWorks.steps.explore.description}</p>
+                <StepVisual copy={copy.howItWorks.steps} variant="explore" />
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="capabilities-title"
+          className={cx(styles.section, styles.capabilitiesSection)}
+          id="capabilities"
+        >
+          <div className={styles.container}>
+            <div className={styles.sectionHeading}>
+              <h2 id="capabilities-title">{copy.capabilities.title}</h2>
+              <p>{copy.capabilities.body}</p>
+            </div>
+
+            <div className={styles.capabilityGroups}>
+              {capabilityGroups.map((group) => (
+                <section className={styles.capabilityGroup} key={group.title}>
+                  <div className={styles.capabilityGroupHeader}>
+                    <h3>{group.title}</h3>
+                    <StatusBadge
+                      labels={copy.capabilities.statuses}
+                      status={group.status}
+                    />
+                  </div>
+                  <div className={styles.capabilityList}>
+                    {group.items.map(({ icon: Icon, title, description }) => (
+                      <article className={styles.capabilityItem} key={title}>
+                        <span className={styles.capabilityIcon}>
+                          <Icon {...iconProps} />
+                        </span>
+                        <span className={styles.capabilityCopy}>
+                          <strong>{title}</strong>
+                          <span>{description}</span>
+                        </span>
+                        <StatusBadge
+                          labels={copy.capabilities.statuses}
+                          status={group.status}
+                        />
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="open-source-title"
+          className={styles.section}
+          id="open-source"
+        >
+          <div className={cx(styles.container, styles.openSourceGrid)}>
+            <div className={styles.openSourceCopy}>
+              <h2 id="open-source-title">{copy.openSource.title}</h2>
+              <p>{copy.openSource.body}</p>
+              <div className={styles.sourceActions}>
+                <a
+                  className={cx(styles.button, styles.buttonPrimary)}
+                  href={repositoryUrl}
+                >
+                  <GitBranch {...iconProps} />
+                  <span>{copy.openSource.viewSource}</span>
+                </a>
+                <a
+                  className={cx(styles.button, styles.buttonSecondary)}
+                  href={contributingUrl}
+                >
+                  <span>{copy.openSource.readContributing}</span>
+                  <ArrowUpRight {...iconProps} />
+                </a>
+              </div>
+            </div>
+
+            <aside
+              aria-label={copy.openSource.repositoryStatus}
+              className={styles.repoPanel}
             >
-              Open workspace
-            </a>
+              <div className={styles.repoPanelHeader}>
+                <span className={styles.repoPanelDot} />
+                <span>{copy.openSource.repositoryLabel}</span>
+              </div>
+              <h3>SQLuminate</h3>
+              <p>{copy.openSource.license}</p>
+              <dl className={styles.repoFacts}>
+                <div>
+                  <dt>{copy.openSource.facts.nextMilestone}</dt>
+                  <dd>{copy.openSource.facts.parserBoundary}</dd>
+                </div>
+                <div>
+                  <dt>{copy.openSource.facts.currentDialect}</dt>
+                  <dd>{copy.openSource.facts.multiDialect}</dd>
+                </div>
+                <div>
+                  <dt>{copy.openSource.facts.queryHandling}</dt>
+                  <dd>{copy.openSource.facts.localByDefault}</dd>
+                </div>
+              </dl>
+            </aside>
           </div>
 
-          <details className="landing-mobile-menu">
-            <summary>MENU</summary>
-            <nav aria-label="Mobile navigation">
-              <a href="#how-it-works">How it works</a>
-              <a href="#features">Features</a>
-              <a href="#open-source">Open source</a>
-              <a href={repositoryUrl}>GitHub</a>
-            </nav>
-          </details>
-        </div>
-      </header>
+          <div className={cx(styles.container, styles.disclaimerGrid)}>
+            <div id="privacy">
+              <span className={styles.disclaimerLabel}>
+                {copy.openSource.privacy.label}
+              </span>
+              <p>{copy.openSource.privacy.text}</p>
+            </div>
+            <div id="limitations">
+              <span className={styles.disclaimerLabel}>
+                {copy.openSource.limitations.label}
+              </span>
+              <p>{copy.openSource.limitations.text}</p>
+            </div>
+          </div>
+        </section>
 
-      <section aria-labelledby="hero-title" className="landing-hero" id="top">
-        <div className="landing-container landing-hero-grid">
-          <div className="landing-hero-copy">
-            <p className="landing-eyebrow">THREE.JS VISUAL LAYER</p>
-            <h1 aria-label="See the query behind the query." id="hero-title">
-              See the query
-              <br />
-              behind the query.
-            </h1>
-            <p className="landing-hero-body">
-              Turn SQL into a clear visual map of sources, joins, and logical
-              steps, right in your browser.
-            </p>
-            <div className="landing-hero-actions">
+        <section
+          aria-labelledby="final-cta-title"
+          className={styles.ctaSection}
+        >
+          <div className={cx(styles.container, styles.ctaPanel)}>
+            <div>
+              <h2 id="final-cta-title">{copy.cta.title}</h2>
+              <p>{copy.cta.body}</p>
+            </div>
+            <div className={styles.ctaSignal} aria-hidden="true">
+              <span>{copy.cta.signalProduct}</span>
+              <strong>{copy.cta.signalStatus}</strong>
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className={styles.ctaActions}>
               <a
-                className="landing-button landing-button-primary"
+                className={cx(styles.button, styles.buttonPrimary)}
                 href="/workspace"
               >
-                Open workspace
+                <span>{copy.cta.openWorkspace}</span>
+                <ArrowUpRight {...iconProps} />
               </a>
               <a
-                className="landing-button landing-button-secondary"
-                href="#how-it-works"
+                className={cx(styles.button, styles.buttonSecondary)}
+                href={repositoryUrl}
               >
-                See how it works
+                <span>{copy.cta.viewGithub}</span>
+                <GitBranch {...iconProps} />
               </a>
             </div>
           </div>
+        </section>
+      </main>
 
-          <SqlNodeField />
-        </div>
-      </section>
-
-      <section aria-label="Product principles" className="principles-strip">
-        <div className="landing-container principles-grid">
-          <div className="principles-intro">
-            <h2>Clarity is a feature.</h2>
-            <span>
-              A visual layer for learning, reviewing, and teaching SQL.
-            </span>
+      <footer className={styles.footer}>
+        <div className={cx(styles.container, styles.footerInner)}>
+          <div className={styles.footerBrand}>
+            <Brand compact descriptor={copy.header.compactBrandDescriptor} />
+            <p>{copy.footer.tagline}</p>
           </div>
-          <div className="principle-stat">
-            <strong>100%</strong>
-            <span>Processed in your browser by default</span>
-          </div>
-          <div className="principle-stat">
-            <strong>01</strong>
-            <span>Educational flow, never a physical plan</span>
-          </div>
-          <div className="principle-stat">
-            <strong>MIT</strong>
-            <span>Open source for learners and teachers</span>
-          </div>
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="how-it-works-title"
-        className="landing-section how-it-works-section"
-        id="how-it-works"
-      >
-        <div className="landing-container">
-          <div className="landing-section-heading">
-            <p className="landing-eyebrow landing-eyebrow-plain">
-              HOW IT WORKS
-            </p>
-            <h2 id="how-it-works-title">From raw SQL to a map you can read.</h2>
-            <p>
-              A calm, inspectable workflow that keeps the query in view while
-              its structure becomes visible.
-            </p>
-          </div>
-
-          <div className="journey-grid">
-            <article className="journey-card journey-card-main">
-              <span className="journey-index">WRITE</span>
-              <h3>Start with working SQL.</h3>
-              <p>
-                Keep your query local, readable, and ready to format as you
-                explore it.
-              </p>
-              <WriteSqlVisual />
-            </article>
-
-            <article className="journey-card">
-              <span className="journey-index">MAP</span>
-              <div>
-                <h3>See the relationships.</h3>
-                <p>Trace sources and joins as a connected system.</p>
-              </div>
-              <RelationVisual />
-            </article>
-
-            <article className="journey-card">
-              <span className="journey-index">LEARN</span>
-              <div>
-                <h3>Follow the logic.</h3>
-                <p>Read a simplified clause sequence without false claims.</p>
-              </div>
-              <FlowVisual />
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="features-title"
-        className="landing-section features-section"
-        id="features"
-      >
-        <div className="landing-container">
-          <div className="landing-section-heading">
-            <h2 id="features-title">Every clause gets a place.</h2>
-            <p>
-              Three focused views keep the question in your head: relationships,
-              sequence, and structure.
-            </p>
-          </div>
-
-          <div className="feature-grid">
-            <article className="feature-card feature-card-graph">
-              <div className="feature-card-copy">
-                <span className="feature-label">JOIN GRAPH</span>
-                <h3>Map the relationships.</h3>
-                <p>
-                  Turn sources and JOIN predicates into readable nodes and
-                  edges.
-                </p>
-              </div>
-              <ThreeSceneCard
-                label="Interactive 3D JOIN relationship model"
-                variant="relationships"
-              />
-            </article>
-
-            <article className="feature-card feature-card-flow">
-              <div className="feature-card-copy">
-                <span className="feature-label">LOGICAL FLOW</span>
-                <h3>Learn the sequence.</h3>
-                <p>
-                  Follow a pedagogical order that stays clearly separate from a
-                  physical plan.
-                </p>
-              </div>
-              <ThreeSceneCard
-                label="Interactive 3D logical query flow"
-                variant="flow"
-              />
-            </article>
-
-            <article className="feature-card feature-card-structure">
-              <div className="feature-card-copy">
-                <span className="feature-label">QUERY STRUCTURE</span>
-                <h3>Keep clauses visible.</h3>
-                <p>
-                  Inspect projections, filters, grouping, sorting, and limits
-                  without losing the whole query.
-                </p>
-              </div>
-              <ThreeSceneCard
-                label="Interactive 3D query structure layers"
-                variant="structure"
-              />
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section
-        aria-labelledby="trust-title"
-        className="landing-section trust-section"
-        id="open-source"
-      >
-        <div className="landing-container trust-panel">
-          <div className="trust-copy">
-            <h2 id="trust-title">Your query stays yours.</h2>
-            <span>
-              SQLuminate earns trust with deterministic, local-first features
-              before anything optional is added.
-            </span>
-          </div>
-
-          <div className="trust-grid">
-            {trustItems.map((item) => (
-              <article key={item.title}>
-                <span className="trust-label">{item.label}</span>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section aria-labelledby="final-cta-title" className="final-cta-section">
-        <div className="landing-container final-cta-panel">
-          <div className="final-cta-copy">
-            <h2 id="final-cta-title">Make your next query click.</h2>
-            <span>
-              Open the local workspace, load the example, and see SQL from the
-              query outward.
-            </span>
-          </div>
-          <ThreeSceneCard
-            label="Interactive 3D SQLuminate beacon"
-            variant="beacon"
-          />
-          <div className="final-cta-actions">
-            <a
-              className="landing-button landing-button-primary"
-              href="/workspace"
-            >
-              Open workspace
-            </a>
-            <a
-              className="landing-button landing-button-secondary"
-              href={repositoryUrl}
-            >
-              View source
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <footer className="landing-footer">
-        <div className="landing-container landing-footer-inner">
-          <Brand compact />
-          <nav aria-label="Footer navigation">
-            <a href={`${repositoryUrl}#readme`}>Docs</a>
-            <a href="/workspace">Example</a>
-            <a href={repositoryUrl}>
-              GitHub <span aria-hidden="true">↗</span>
-            </a>
-            <a href={`${repositoryUrl}/blob/main/LICENSE`}>MIT License</a>
+          <nav aria-label={copy.footer.navigation} className={styles.footerNav}>
+            <a href={`${repositoryUrl}#readme`}>{copy.footer.docs}</a>
+            <a href="#privacy">{copy.footer.privacy}</a>
+            <a href="#limitations">{copy.footer.limitations}</a>
+            <a href={contributingUrl}>{copy.footer.contributing}</a>
+            <a href={repositoryUrl}>{copy.footer.github}</a>
+            <a href={licenseUrl}>{copy.footer.mitLicense}</a>
           </nav>
-          <p>
-            <span>SQL processed locally</span>
-            <span>No query logging</span>
-          </p>
+          <p className={styles.footerNote}>{copy.footer.note}</p>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

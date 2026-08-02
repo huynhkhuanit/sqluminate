@@ -16,6 +16,8 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
+import { useI18n } from "@/components/i18n/i18n-provider";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { SqlEditorPanel } from "@/features/sql-editor/components/sql-editor-panel";
 import { useColorTheme } from "@/features/sql-editor/hooks/use-color-theme";
 import { usePersistedQuery } from "@/features/sql-editor/hooks/use-persisted-query";
@@ -42,10 +44,12 @@ const iconProps = {
 } as const;
 
 export function SqlWorkbench() {
+  const { dictionary, locale } = useI18n();
+  const copy = dictionary.workspace;
   const [dialect, setDialect] = useState<SqlDialect>("postgresql");
   const [feedback, setFeedback] = useState<EditorFeedback>({
     tone: "neutral",
-    message: "Ready for local editing.",
+    message: copy.feedback.ready,
   });
   const { theme, toggleTheme } = useColorTheme();
   const { query, setQuery, isHydrated, persistenceState, persistenceMessage } =
@@ -55,12 +59,14 @@ export function SqlWorkbench() {
     if (query.trim().length === 0) {
       setFeedback({
         tone: "error",
-        message: "Add SQL before formatting.",
+        message: copy.feedback.addSql,
       });
       return;
     }
 
-    const result = formatSql(query, dialect);
+    const result = formatSql(query, dialect, {
+      failurePrefix: copy.feedback.formattingFailed,
+    });
 
     if (!result.ok) {
       setFeedback({
@@ -73,9 +79,9 @@ export function SqlWorkbench() {
     setQuery(result.sql);
     setFeedback({
       tone: "success",
-      message: "Query formatted locally.",
+      message: copy.feedback.formatted,
     });
-  }, [dialect, query, setQuery]);
+  }, [copy.feedback, dialect, query, setQuery]);
 
   useEffect(() => {
     function handleKeyboardShortcut(event: KeyboardEvent) {
@@ -95,16 +101,15 @@ export function SqlWorkbench() {
   }, [handleFormat]);
 
   const characterCount = useMemo(
-    () => query.length.toLocaleString("en-US"),
-    [query.length],
+    () => new Intl.NumberFormat(locale).format(query.length),
+    [locale, query.length],
   );
 
   function handleQueryChange(nextQuery: string) {
     if (nextQuery.length > MAX_SQL_LENGTH) {
       setFeedback({
         tone: "error",
-        message:
-          "Queries are limited to 100,000 characters for browser safety.",
+        message: copy.feedback.queryTooLong,
       });
       return;
     }
@@ -112,7 +117,7 @@ export function SqlWorkbench() {
     setQuery(nextQuery);
     setFeedback({
       tone: "neutral",
-      message: "Editing locally.",
+      message: copy.feedback.editing,
     });
   }
 
@@ -127,7 +132,7 @@ export function SqlWorkbench() {
     setQuery(POSTGRESQL_EXAMPLE.sql);
     setFeedback({
       tone: "success",
-      message: `Loaded example: ${POSTGRESQL_EXAMPLE.title}.`,
+      message: `${copy.feedback.loadedExample} ${dictionary.dialects.postgresql}.`,
     });
   }
 
@@ -135,18 +140,18 @@ export function SqlWorkbench() {
     setQuery("");
     setFeedback({
       tone: "success",
-      message: "Editor cleared.",
+      message: copy.feedback.cleared,
     });
   }
 
   const persistenceLabel =
     persistenceState === "loading"
-      ? "Restoring saved query"
+      ? copy.persistence.restoring
       : persistenceState === "saving"
-        ? "Saving locally"
+        ? copy.persistence.saving
         : persistenceState === "saved"
-          ? "Saved locally"
-          : "Local save unavailable";
+          ? copy.persistence.saved
+          : copy.persistence.unavailable;
 
   return (
     <main className="min-h-[100dvh] bg-[var(--background)]">
@@ -167,17 +172,22 @@ export function SqlWorkbench() {
                 SQLuminate
               </span>
               <span className="hidden text-xs text-[var(--foreground-muted)] sm:block">
-                Visual SQL Explorer
+                {copy.brandDescriptor}
               </span>
             </span>
           </a>
 
           <div className="flex items-center gap-2">
             <span className="hidden text-xs text-[var(--foreground-muted)] md:block">
-              Local-first workspace
+              {copy.localFirst}
             </span>
+            <LanguageSwitcher />
             <button
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+              aria-label={
+                theme === "dark"
+                  ? copy.theme.switchToLight
+                  : copy.theme.switchToDark
+              }
               className="grid size-11 cursor-pointer place-items-center rounded-md border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground-muted)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--foreground)] active:bg-[var(--surface-subtle)]"
               onClick={toggleTheme}
               type="button"
@@ -202,11 +212,10 @@ export function SqlWorkbench() {
             className="text-2xl font-semibold tracking-[-0.03em] sm:text-3xl"
             id="workspace-title"
           >
-            Understand SQL from the query outward.
+            {copy.title}
           </h1>
           <p className="mt-2 max-w-[65ch] text-sm leading-6 text-[var(--foreground-muted)] sm:text-base">
-            Write and format PostgreSQL in your browser. Parsing and
-            visualization are intentionally outside this first milestone.
+            {copy.description}
           </p>
         </div>
 
@@ -220,7 +229,7 @@ export function SqlWorkbench() {
                 <div className="flex items-center gap-2">
                   <FileCode2 {...iconProps} />
                   <h2 className="text-sm font-semibold" id="editor-heading">
-                    SQL editor
+                    {copy.editor}
                   </h2>
                 </div>
 
@@ -229,7 +238,7 @@ export function SqlWorkbench() {
                     className="text-xs font-medium text-[var(--foreground-muted)]"
                     htmlFor="sql-dialect"
                   >
-                    Dialect
+                    {copy.dialect}
                   </label>
                   <select
                     className="h-10 cursor-pointer rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-medium text-[var(--foreground)] hover:border-[var(--border-strong)]"
@@ -239,7 +248,7 @@ export function SqlWorkbench() {
                   >
                     {SQL_DIALECT_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
-                        {option.label}
+                        {dictionary.dialects[option.value]}
                       </option>
                     ))}
                   </select>
@@ -250,11 +259,11 @@ export function SqlWorkbench() {
                 <button
                   className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-md bg-[var(--accent)] px-3.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)] active:opacity-90"
                   onClick={handleFormat}
-                  title="Format SQL (Ctrl+Shift+F)"
+                  title={copy.formatTitle}
                   type="button"
                 >
                   <Paintbrush {...iconProps} />
-                  Format
+                  {copy.format}
                 </button>
                 <button
                   className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3.5 text-sm font-medium transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-subtle)] active:bg-[var(--surface-strong)]"
@@ -262,7 +271,7 @@ export function SqlWorkbench() {
                   type="button"
                 >
                   <Braces {...iconProps} />
-                  Load example
+                  {copy.loadExample}
                 </button>
                 <button
                   className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3.5 text-sm font-medium transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--surface-subtle)] active:bg-[var(--surface-strong)]"
@@ -270,13 +279,15 @@ export function SqlWorkbench() {
                   type="button"
                 >
                   <Eraser {...iconProps} />
-                  Clear
+                  {copy.clear}
                 </button>
               </div>
             </div>
 
             {isHydrated ? (
               <SqlEditorPanel
+                dialect={dialect}
+                editorAriaLabel={copy.editor}
                 onChange={handleQueryChange}
                 onFormat={handleFormat}
                 query={query}
@@ -293,7 +304,9 @@ export function SqlWorkbench() {
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] bg-[var(--surface-subtle)] px-4 py-2.5 text-xs text-[var(--foreground-muted)]">
               <span aria-live="polite">{persistenceLabel}</span>
-              <span>{characterCount} characters</span>
+              <span>
+                {characterCount} {copy.characters}
+              </span>
             </div>
           </section>
 
@@ -307,10 +320,10 @@ export function SqlWorkbench() {
                   strokeWidth={1.5}
                 />
                 <h2 className="mt-4 text-base font-semibold">
-                  Start with a query
+                  {copy.empty.title}
                 </h2>
                 <p className="mx-auto mt-2 max-w-[34ch] text-sm leading-6 text-[var(--foreground-muted)]">
-                  Write SQL in the editor or load the tested PostgreSQL example.
+                  {copy.empty.description}
                 </p>
               </div>
             ) : (
@@ -321,42 +334,41 @@ export function SqlWorkbench() {
                   </span>
                   <div>
                     <h2 className="text-base font-semibold">
-                      Private by default
+                      {copy.private.title}
                     </h2>
                     <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">
-                      Your SQL stays in this browser. It is formatted locally
-                      and never executed.
+                      {copy.private.description}
                     </p>
                   </div>
                 </div>
 
                 <dl className="mt-6 space-y-4 border-t border-[var(--border)] pt-5 text-sm">
                   <div>
-                    <dt className="font-medium">Editor</dt>
+                    <dt className="font-medium">{copy.facts.editor}</dt>
                     <dd className="mt-1 text-[var(--foreground-muted)]">
-                      Monaco with SQL highlighting and line numbers
+                      {copy.facts.editorValue}
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-medium">Dialect support</dt>
+                    <dt className="font-medium">{copy.facts.dialectSupport}</dt>
                     <dd className="mt-1 text-[var(--foreground-muted)]">
-                      PostgreSQL only in this milestone
+                      {copy.facts.dialectValue}
                     </dd>
                   </div>
                   <div>
-                    <dt className="font-medium">Current limitation</dt>
+                    <dt className="font-medium">{copy.facts.limitation}</dt>
                     <dd className="mt-1 text-[var(--foreground-muted)]">
-                      SQL is not parsed, visualized, or sent to a database
+                      {copy.facts.limitationValue}
                     </dd>
                   </div>
                 </dl>
 
                 <div className="mt-6 rounded-md bg-[var(--surface-subtle)] p-4">
                   <p className="text-xs font-semibold">
-                    Example learning objective
+                    {copy.learningObjective}
                   </p>
                   <p className="mt-1 text-sm leading-6 text-[var(--foreground-muted)]">
-                    {POSTGRESQL_EXAMPLE.learningObjective}
+                    {copy.exampleObjective}
                   </p>
                 </div>
               </>
@@ -385,8 +397,8 @@ export function SqlWorkbench() {
         </div>
 
         <footer className="mt-6 flex flex-col gap-1 border-t border-[var(--border)] pt-4 text-xs leading-5 text-[var(--foreground-muted)] sm:flex-row sm:items-center sm:justify-between">
-          <span>SQL is processed locally and is not executed.</span>
-          <span>Milestones 0 and 1</span>
+          <span>{copy.footer.localNotice}</span>
+          <span>{copy.footer.milestones}</span>
         </footer>
       </section>
     </main>

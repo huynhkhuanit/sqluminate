@@ -6,4 +6,3 @@ minimumReleaseAgeExclude:
   - lucide-react@1.28.0
   - playwright-core@1.62.1
   - playwright@1.62.1
-  - "@types/three@0.185.3"
